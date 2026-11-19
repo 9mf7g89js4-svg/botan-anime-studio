@@ -12,13 +12,13 @@
 <div class="actions" style="margin-top:12px"><button class="danger" id="clear">画像をすべて消す</button></div><p class="small">写真を選ぶと、この画面にすぐ表示されます。残しておきたい写真は「写真と台本を保存」を押してね。「以前保存したデータを復元」は、保存済みの内容で今の画面を入れ替える機能です。ブラウザのデータ消去や容量制限には注意してね。</p></section>
 <section class="panel"><h2>② 台本メモ</h2><p class="hint">会話や台本をここにまとめていく場所だよ。</p><textarea id="script" placeholder="ここに会話や台本を入力できます。"></textarea><div class="actions" style="margin-top:10px"><button class="secondary" id="copy">台本をコピー</button><button class="secondary" id="txt">台本をテキスト保存</button></div></section>
 <section class="panel"><h2>③ 写真の文字を読み取る（OCR）</h2>
-<p class="hint">吹き出しの色で話者を推定し、話者名を付けて1つずつ読み取ります。紫色は自分側、濃い灰色は相手側として表示します。</p>
+<p class="hint">会話画面の中央部分を優先して吹き出しを検出します。広告・タイトル・入力欄などを避け、色から話者を推定して読み取ります。</p>
 <label class="small" style="display:flex;gap:8px;align-items:center;margin:10px 0"><input id="fullImageOcr" type="checkbox"> 吹き出しが検出できないときは画面全体を読み取る</label>
 <div class="actions"><button id="ocr">話者名を付けて吹き出しを読み取る</button></div>
 <div id="ocrStatus" class="small" role="status" style="margin-top:10px;min-height:1.5em">読み取りにはインターネット接続が必要です。初回は読み取り用データの読み込みに時間がかかる場合があります。</div>
 <p class="small">※ OCRは文字を誤認識することがあります。読み取り後、台本メモを確認・修正してください。写真や台本を外部サービスへ保存する機能ではありませんが、OCR処理のためTesseract.jsと日本語データをインターネットから読み込みます。</p></section>
 <section class="panel"><h2>④ これから追加する機能</h2><ul class="small"><li>キャラクター設定・立ち絵の管理</li><li>画像ごとの台本整理</li><li>シーンごとの台本整理</li><li>音声・動画制作に渡す素材づくり</li></ul><p class="small">写真の取り込み・保存・復元と、日本語OCRの試験機能を含みます。動画生成機能はまだ含まれていません。</p></section>
-</main><footer>牡丹アニメ工房・試作版 7.0（話者ラベル付きOCRお試し版）</footer>
+</main><footer>牡丹アニメ工房・試作版 8.0（会話領域しぼり込み版）</footer>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script>
 (()=>{const picker=document.getElementById('picker'),gallery=document.getElementById('gallery'),status=document.getElementById('status'),script=document.getElementById('script');let images=[];
@@ -53,7 +53,7 @@ function detectBubbleCrops(dataUrl){
    const charcoal=(r>27 && r<82 && Math.abs(r-g)<13 && Math.abs(g-b)<13);
    return purple||charcoal;
   }
-  for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+  for(let y=Math.floor(h*0.28);y<Math.floor(h*0.88);y++)for(let x=0;x<w;x++){
    const p=y*w+x;if(seen[p])continue;
    const idx=p*4;if(!isBubble(idx)){seen[p]=1;continue}
    const stack=[p];seen[p]=1;let minX=x,maxX=x,minY=y,maxY=y,count=0;
@@ -72,6 +72,13 @@ function detectBubbleCrops(dataUrl){
    if(count>Math.max(25,w*h*0.00012)&&bw>w*0.12&&bh>h*0.025)comps.push({x:minX,y:minY,w:bw,h:bh,area:count});
   }
   // 小さなノイズを除外し、上から順に並べる
+  const dialogueComps=comps.filter(c=>
+   c.y>=Math.floor(h*0.28) &&
+   c.y+c.h<=Math.floor(h*0.89) &&
+   c.w>=w*0.18 &&
+   c.h>=h*0.035
+  );
+  comps.length=0;comps.push(...dialogueComps);
   comps.sort((a,b)=>a.y-b.y||a.x-b.x);
   const merged=[];
   for(const c of comps){
@@ -149,7 +156,7 @@ ocrButton.onclick=async()=>{
   if(results.length){
    const extracted=results.join('\n\n');
    script.value=script.value.trim()?script.value.trim()+'\n\n'+extracted:extracted;
-   ocrStatus.textContent='読み取り完了。吹き出しの色から話者名を推定して付けたよ。名前が違う場合や文字化けは台本メモで修正してね。';
+   ocrStatus.textContent='読み取り完了。会話画面の中央部分を優先して読み取ったよ。話者名や文字化けは台本メモで確認・修正してね。';
   }else ocrStatus.textContent='文字を読み取れませんでした。別の画像でも試してみてね。';
  }catch(e){
   ocrStatus.textContent='読み取り中にエラーが起きました。通信状態を確認して、写真1枚で再度試してください。';
