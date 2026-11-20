@@ -1,8 +1,21 @@
 <!doctype html>
-<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#30243f"><title>牡丹アニメ工房</title>
+<html lang="ja">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#30243f"><title>牡丹アニメ工房</title>
 <style>
-*{box-sizing:border-box}body{margin:0;background:#17131e;color:#fff8ff;font-family:-apple-system,BlinkMacSystemFont,sans-serif}header{padding:25px 15px;text-align:center;background:#493451}h1{margin:0 0 6px;font-size:25px}header p{margin:0;font-size:13px;color:#f2dced}main{max-width:760px;margin:auto;padding:15px}.panel{background:#261f30;border:1px solid #594765;border-radius:16px;padding:16px;margin-bottom:15px}h2{font-size:17px;color:#f0a9d0;margin:0 0 9px}.hint,.small{font-size:13px;line-height:1.6;color:#cbbdce}.actions{display:flex;flex-wrap:wrap;gap:9px}button,.pick{background:#efa5ce;color:#291a2b;border:0;border-radius:11px;padding:12px 15px;font-size:14px;font-weight:bold;min-height:44px;display:inline-flex;align-items:center;justify-content:center}.secondary{background:#493a55;color:white;border:1px solid #715d7d}.danger{background:#5a3548;color:#ffe9f2}.pick input{position:absolute;width:1px;height:1px;opacity:0}#status{font-size:13px;color:#f4c9e2;margin:12px 0;min-height:1.5em}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.empty{grid-column:1/-1;text-align:center;padding:22px 8px;border:1px dashed #715d7d;border-radius:10px;color:#b9aabd;font-size:13px}.item{background:#17131e;border:1px solid #594765;border-radius:10px;overflow:hidden}.item img{width:100%;height:165px;object-fit:contain;display:block;background:#100d14}.meta{padding:7px;font-size:12px;color:#cbbdce;overflow-wrap:anywhere}.item button{width:100%;border-radius:0;background:#493344;color:white;font-size:12px;min-height:36px}textarea{width:100%;min-height:140px;background:#17131e;color:white;border:1px solid #715d7d;border-radius:10px;padding:12px;font:14px/1.6 sans-serif}footer{text-align:center;color:#9f91a7;font-size:11px;padding:10px}
-@media(min-width:560px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+*{box-sizing:border-box}body{margin:0;background:#17131e;color:#fff8ff;font-family:-apple-system,BlinkMacSystemFont,sans-serif}
+header{padding:25px 15px;text-align:center;background:#493451}h1{margin:0 0 6px;font-size:25px}header p{margin:0;font-size:13px;color:#f2dced}
+main{max-width:760px;margin:auto;padding:15px}.panel{background:#261f30;border:1px solid #594765;border-radius:16px;padding:16px;margin-bottom:15px}
+h2{font-size:17px;color:#f0a9d0;margin:0 0 9px}.hint,.small{font-size:13px;line-height:1.6;color:#cbbdce}
+.actions{display:flex;flex-wrap:wrap;gap:9px}button,.pick{background:#efa5ce;color:#291a2b;border:0;border-radius:11px;padding:12px 15px;font-size:14px;font-weight:bold;min-height:44px;display:inline-flex;align-items:center;justify-content:center}
+.secondary{background:#493a55;color:white;border:1px solid #715d7d}.danger{background:#5a3548;color:#ffe9f2}
+.pick input{position:absolute;width:1px;height:1px;opacity:0}#status{font-size:13px;color:#f4c9e2;margin:12px 0;min-height:1.5em}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.empty{grid-column:1/-1;text-align:center;padding:22px 8px;border:1px dashed #715d7d;border-radius:10px;color:#b9aabd;font-size:13px}
+.item{background:#17131e;border:1px solid #594765;border-radius:10px;overflow:hidden}.item img{width:100%;height:165px;object-fit:contain;display:block;background:#100d14}
+.meta{padding:7px;font-size:12px;color:#cbbdce;overflow-wrap:anywhere}.item button{width:100%;border-radius:0;background:#493344;color:white;font-size:12px;min-height:36px}
+textarea{width:100%;min-height:140px;background:#17131e;color:white;border:1px solid #715d7d;border-radius:10px;padding:12px;font:14px/1.6 sans-serif}
+footer{text-align:center;color:#9f91a7;font-size:11px;padding:10px}@media(min-width:560px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 </style></head><body>
 <header><h1>牡丹アニメ工房</h1><p>ゼタの物語を、少しずつアニメ作品へ。</p></header>
 <main>
@@ -12,159 +25,62 @@
 <div class="actions" style="margin-top:12px"><button class="danger" id="clear">画像をすべて消す</button></div><p class="small">写真を選ぶと、この画面にすぐ表示されます。残しておきたい写真は「写真と台本を保存」を押してね。「以前保存したデータを復元」は、保存済みの内容で今の画面を入れ替える機能です。ブラウザのデータ消去や容量制限には注意してね。</p></section>
 <section class="panel"><h2>② 台本メモ</h2><p class="hint">会話や台本をここにまとめていく場所だよ。</p><textarea id="script" placeholder="ここに会話や台本を入力できます。"></textarea><div class="actions" style="margin-top:10px"><button class="secondary" id="copy">台本をコピー</button><button class="secondary" id="txt">台本をテキスト保存</button></div></section>
 <section class="panel"><h2>③ 写真の文字を読み取る（OCR）</h2>
-<p class="hint">会話画面の中央部分を優先して吹き出しを検出します。広告・タイトル・入力欄などを避け、色から話者を推定して読み取ります。</p>
-<label class="small" style="display:flex;gap:8px;align-items:center;margin:10px 0"><input id="fullImageOcr" type="checkbox"> 吹き出しが検出できないときは画面全体を読み取る</label>
+<p class="hint">会話画面の吹き出しを自動で探して読み取ります。広告・タイトル・入力欄などを避け、色から話者を推定します。吹き出しが見つからない場合は、自動で画像全体を読み取ります。</p>
 <div class="actions"><button id="ocr">話者名を付けて吹き出しを読み取る</button></div>
 <div id="ocrStatus" class="small" role="status" style="margin-top:10px;min-height:1.5em">読み取りにはインターネット接続が必要です。初回は読み取り用データの読み込みに時間がかかる場合があります。</div>
 <p class="small">※ OCRは文字を誤認識することがあります。読み取り後、台本メモを確認・修正してください。写真や台本を外部サービスへ保存する機能ではありませんが、OCR処理のためTesseract.jsと日本語データをインターネットから読み込みます。</p></section>
 <section class="panel"><h2>④ これから追加する機能</h2><ul class="small"><li>キャラクター設定・立ち絵の管理</li><li>画像ごとの台本整理</li><li>シーンごとの台本整理</li><li>音声・動画制作に渡す素材づくり</li></ul><p class="small">写真の取り込み・保存・復元と、日本語OCRの試験機能を含みます。動画生成機能はまだ含まれていません。</p></section>
-</main><footer>牡丹アニメ工房・試作版 8.0（会話領域しぼり込み版）</footer>
+</main><footer>牡丹アニメ工房・試作版 9.0（吹き出し検出範囲調整版）</footer>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script>
 (()=>{const picker=document.getElementById('picker'),gallery=document.getElementById('gallery'),status=document.getElementById('status'),script=document.getElementById('script');let images=[];
-function say(t){status.textContent=t}function render(){gallery.innerHTML='';if(!images.length){gallery.innerHTML='<div class="empty">ここに選んだ写真が表示されます</div>';return}images.forEach((x,i)=>{const card=document.createElement('div');card.className='item';const img=document.createElement('img');img.src=x.data;img.alt=x.name;const meta=document.createElement('div');meta.className='meta';meta.textContent=(i+1)+'枚目：'+x.name;const del=document.createElement('button');del.textContent='この画像を削除';del.onclick=()=>{images.splice(i,1);render();say('画像を1枚削除しました。')};card.append(img,meta,del);gallery.append(card)})}
+function say(t){status.textContent=t}
+function render(){gallery.innerHTML='';if(!images.length){gallery.innerHTML='<div class="empty">ここに選んだ写真が表示されます</div>';return}images.forEach((x,i)=>{const card=document.createElement('div');card.className='item';const img=document.createElement('img');img.src=x.data;img.alt=x.name;const meta=document.createElement('div');meta.className='meta';meta.textContent=(i+1)+'枚目：'+x.name;const del=document.createElement('button');del.textContent='この画像を削除';del.onclick=()=>{images.splice(i,1);render();say('画像を1枚削除しました。')};card.append(img,meta,del);gallery.append(card)})}
 picker.addEventListener('change',()=>{const files=Array.from(picker.files||[]).filter(f=>f.type.startsWith('image/'));if(!files.length){say('画像が選択されませんでした。');return}let left=files.length,added=0;say(files.length+'枚の画像を読み込んでいます…');files.forEach(file=>{const r=new FileReader();r.onload=()=>{images.push({name:file.name,data:r.result});added++;left--;if(!left){render();say(added+'枚の画像を取り込みました。画面に表示されています。')}};r.onerror=()=>{left--;if(!left){render();say(added+'枚を取り込みました。')}};r.readAsDataURL(file)});picker.value=''});
 document.getElementById('save').onclick=()=>{try{localStorage.setItem('botanImages',JSON.stringify(images));localStorage.setItem('botanScript',script.value);say('写真と台本をこのブラウザに保存しました。')}catch(e){say('保存できません。画像の枚数を減らして試してください。')}};
 document.getElementById('restore').onclick=()=>{if(images.length&&!confirm('今、画面に表示されている写真を、以前保存した写真に入れ替えますか？'))return;try{images=JSON.parse(localStorage.getItem('botanImages')||'[]');script.value=localStorage.getItem('botanScript')||'';render();say('以前保存したデータを復元しました。現在の写真と入れ替わっています。')}catch(e){say('保存データを復元できませんでした。')}};
 document.getElementById('clear').onclick=()=>{if(confirm('画面上の画像をすべて消しますか？')){images=[];render();say('画面上の画像を消しました。保存済みデータは残っています。')}};
 document.getElementById('copy').onclick=async()=>{try{await navigator.clipboard.writeText(script.value);say('台本をコピーしました。')}catch(e){script.select();say('台本を選択しました。長押ししてコピーできます。')}};
 document.getElementById('txt').onclick=()=>{const a=document.createElement('a'),u=URL.createObjectURL(new Blob([script.value],{type:'text/plain;charset=utf-8'}));a.href=u;a.download='botan_script.txt';a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)};
-
-
 const ocrButton=document.getElementById('ocr'),ocrStatus=document.getElementById('ocrStatus');
-const fullImageOcr=document.getElementById('fullImageOcr');
-
-function loadImage(dataUrl){
- return new Promise((resolve,reject)=>{
-  const img=new Image();img.onload=()=>resolve(img);img.onerror=reject;img.src=dataUrl;
+function loadImage(dataUrl){return new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>resolve(img);img.onerror=reject;img.src=dataUrl})}
+function detectBubbleCrops(dataUrl){return loadImage(dataUrl).then(img=>{
+ const maxW=420,ratio=Math.min(1,maxW/img.width),w=Math.max(1,Math.round(img.width*ratio)),h=Math.max(1,Math.round(img.height*ratio));
+ const base=document.createElement('canvas');base.width=w;base.height=h;const bctx=base.getContext('2d',{willReadFrequently:true});bctx.drawImage(img,0,0,w,h);
+ const px=bctx.getImageData(0,0,w,h).data,seen=new Uint8Array(w*h),comps=[];
+ function isBubble(i){const r=px[i],g=px[i+1],b=px[i+2];const purple=(r>65&&b>105&&b>r*1.12&&r>g*1.22&&g<145);const charcoal=(r>27&&r<82&&Math.abs(r-g)<13&&Math.abs(g-b)<13);return purple||charcoal}
+ // v8より上側・下側の検出範囲を少し広げる
+ const scanTop=Math.floor(h*0.20),scanBottom=Math.floor(h*0.94);
+ for(let y=scanTop;y<scanBottom;y++)for(let x=0;x<w;x++){const p=y*w+x;if(seen[p])continue;const idx=p*4;if(!isBubble(idx)){seen[p]=1;continue}
+  const stack=[p];seen[p]=1;let minX=x,maxX=x,minY=y,maxY=y,count=0;
+  while(stack.length){const q=stack.pop(),qx=q%w,qy=(q/w)|0;count++;if(qx<minX)minX=qx;if(qx>maxX)maxX=qx;if(qy<minY)minY=qy;if(qy>maxY)maxY=qy;
+   const ns=[q-1,q+1,q-w,q+w];for(let k=0;k<4;k++){const n=ns[k];if(n<0||n>=w*h)continue;const nx=n%w,ny=(n/w)|0;if((k===0&&qx===0)||(k===1&&qx===w-1)||(k===2&&qy===0)||(k===3&&qy===h-1)||seen[n])continue;seen[n]=1;if(isBubble(n*4))stack.push(n)}
+  }
+  const bw=maxX-minX+1,bh=maxY-minY+1;if(count>Math.max(20,w*h*0.00009)&&bw>w*0.12&&bh>h*0.022)comps.push({x:minX,y:minY,w:bw,h:bh,area:count})
  }
- );
-}
-function detectBubbleCrops(dataUrl){
- return loadImage(dataUrl).then(img=>{
-  const maxW=360, ratio=Math.min(1,maxW/img.width);
-  const w=Math.max(1,Math.round(img.width*ratio)),h=Math.max(1,Math.round(img.height*ratio));
-  const base=document.createElement('canvas');base.width=w;base.height=h;
-  const bctx=base.getContext('2d',{willReadFrequently:true});bctx.drawImage(img,0,0,w,h);
-  const px=bctx.getImageData(0,0,w,h).data, seen=new Uint8Array(w*h), comps=[];
-  function isBubble(i){
-   const r=px[i],g=px[i+1],b=px[i+2],mx=Math.max(r,g,b),mn=Math.min(r,g,b);
-   const purple=(r>65 && b>105 && b>r*1.12 && r>g*1.22 && g<145);
-   const charcoal=(r>27 && r<82 && Math.abs(r-g)<13 && Math.abs(g-b)<13);
-   return purple||charcoal;
-  }
-  for(let y=Math.floor(h*0.28);y<Math.floor(h*0.88);y++)for(let x=0;x<w;x++){
-   const p=y*w+x;if(seen[p])continue;
-   const idx=p*4;if(!isBubble(idx)){seen[p]=1;continue}
-   const stack=[p];seen[p]=1;let minX=x,maxX=x,minY=y,maxY=y,count=0;
-   while(stack.length){
-    const q=stack.pop(),qx=q%w,qy=(q/w)|0;count++;
-    if(qx<minX)minX=qx;if(qx>maxX)maxX=qx;if(qy<minY)minY=qy;if(qy>maxY)maxY=qy;
-    const ns=[q-1,q+1,q-w,q+w];
-    for(let k=0;k<4;k++){
-     const n=ns[k];if(n<0||n>=w*h)continue;
-     const nx=n%w,ny=(n/w)|0;
-     if((k===0&&qx===0)||(k===1&&qx===w-1)||(k===2&&qy===0)||(k===3&&qy===h-1)||seen[n])continue;
-     seen[n]=1;if(isBubble(n*4))stack.push(n);
-    }
-   }
-   const bw=maxX-minX+1,bh=maxY-minY+1;
-   if(count>Math.max(25,w*h*0.00012)&&bw>w*0.12&&bh>h*0.025)comps.push({x:minX,y:minY,w:bw,h:bh,area:count});
-  }
-  // 小さなノイズを除外し、上から順に並べる
-  const dialogueComps=comps.filter(c=>
-   c.y>=Math.floor(h*0.28) &&
-   c.y+c.h<=Math.floor(h*0.89) &&
-   c.w>=w*0.18 &&
-   c.h>=h*0.035
-  );
-  comps.length=0;comps.push(...dialogueComps);
-  comps.sort((a,b)=>a.y-b.y||a.x-b.x);
-  const merged=[];
-  for(const c of comps){
-   const last=merged[merged.length-1];
-   if(last && Math.abs(c.y-last.y)<3 && Math.abs(c.x-last.x)<3){
-    last.x=Math.min(last.x,c.x);last.y=Math.min(last.y,c.y);
-    last.w=Math.max(last.x+last.w,c.x+c.w)-last.x;
-    last.h=Math.max(last.y+last.h,c.y+c.h)-last.y;
-   }else merged.push({...c});
-  }
-  const crops=[];
-  for(const c of merged){
-   // 吹き出し中央付近の色で話者を推定
-   let pr=0,pg=0,pb=0,n=0;
-   for(let yy=Math.max(c.y,Math.floor(c.y+c.h*0.25));yy<Math.min(h,Math.ceil(c.y+c.h*0.75));yy+=2){
-    for(let xx=Math.max(c.x,Math.floor(c.x+c.w*0.25));xx<Math.min(w,Math.ceil(c.x+c.w*0.75));xx+=2){
-     const ii=(yy*w+xx)*4,rr=px[ii],gg=px[ii+1],bb=px[ii+2];
-     if(rr>25&&rr<130&&gg<170&&bb<240){pr+=rr;pg+=gg;pb+=bb;n++;}
-    }
-   }
-   const ar=n?pr/n:0,ag=n?pg/n:0,ab=n?pb/n:0;
-   const speaker=(ab>ar*1.12&&ar>ag*1.2)?"牡丹（自分側）":"日比崎まゆ（相手側）";
-   const pad=5,sx=Math.max(0,c.x-pad),sy=Math.max(0,c.y-pad);
-   const ex=Math.min(w,c.x+c.w+pad),ey=Math.min(h,c.y+c.h+pad);
-   const crop=document.createElement('canvas');
-   const cw=ex-sx,ch=ey-sy,scale=3;
-   crop.width=cw*scale;crop.height=ch*scale;
-   const ctx=crop.getContext('2d',{willReadFrequently:true});
-   ctx.drawImage(base,sx,sy,cw,ch,0,0,crop.width,crop.height);
-   const im=ctx.getImageData(0,0,crop.width,crop.height),d=im.data;
-   // 白い文字を黒く、暗い吹き出し背景を白く反転してOCRしやすくする
-   for(let i=0;i<d.length;i+=4){
-    const gray=0.299*d[i]+0.587*d[i+1]+0.114*d[i+2];
-    const v=255-gray;d[i]=d[i+1]=d[i+2]=v;
-   }
-   ctx.putImageData(im,0,0);crops.push({data:crop.toDataURL('image/png'),speaker});
-  }
-  return crops;
- });
-}
-function prepareWhole(dataUrl){
- return loadImage(dataUrl).then(img=>{
-  const c=document.createElement('canvas');c.width=img.width*2;c.height=img.height*2;
-  const x=c.getContext('2d');x.drawImage(img,0,0,c.width,c.height);return c.toDataURL('image/png');
- });
-}
-ocrButton.onclick=async()=>{
- if(!images.length){ocrStatus.textContent='先に「写真を選んで取り込む」から写真を選んでね。';return}
- if(!window.Tesseract){ocrStatus.textContent='OCR機能を読み込めませんでした。インターネット接続を確認して、ページを再読み込みしてください。';return}
- ocrButton.disabled=true;ocrButton.textContent='読み取り中…';
- let worker=null;const results=[];
- try{
-  ocrStatus.textContent='日本語の読み取り準備中です。初回は少し時間がかかります…';
-  worker=await Tesseract.createWorker('jpn',1,{logger:m=>{
-   if(m.status==='recognizing text')ocrStatus.textContent='文字を読み取っています… '+Math.round((m.progress||0)*100)+'%';
-   else if(m.status)ocrStatus.textContent='準備中：'+m.status;
-  }});
-  await worker.setParameters({tessedit_pageseg_mode:'6',preserve_interword_spaces:'1'});
-  for(let i=0;i<images.length;i++){
-   ocrStatus.textContent=(i+1)+'/'+images.length+'枚目：吹き出しを探しています…';
-   let crops=fullImageOcr.checked?[]:await detectBubbleCrops(images[i].data);
-   if(!crops.length){
-    ocrStatus.textContent='吹き出しが見つからないため、画像全体を読み取っています…';
-    crops=[await prepareWhole(images[i].data)];
-   }
-   const lines=[];
-   for(let j=0;j<crops.length;j++){
-    ocrStatus.textContent=(i+1)+'/'+images.length+'枚目：吹き出し '+(j+1)+'/'+crops.length+' を読み取り中…';
-    const r=await worker.recognize(crops[j].data);
-    const t=(r.data.text||'').replace(/[ \t]+\n/g,'\n').replace(/\n{3,}/g,'\n\n').trim();
-    if(t)lines.push('【'+crops[j].speaker+'】\n'+t);
-   }
-   if(lines.length)results.push('【'+(i+1)+'枚目：'+images[i].name+'】\n'+lines.join('\n\n'));
-  }
-  if(results.length){
-   const extracted=results.join('\n\n');
-   script.value=script.value.trim()?script.value.trim()+'\n\n'+extracted:extracted;
-   ocrStatus.textContent='読み取り完了。会話画面の中央部分を優先して読み取ったよ。話者名や文字化けは台本メモで確認・修正してね。';
-  }else ocrStatus.textContent='文字を読み取れませんでした。別の画像でも試してみてね。';
- }catch(e){
-  ocrStatus.textContent='読み取り中にエラーが起きました。通信状態を確認して、写真1枚で再度試してください。';
- }finally{
-  if(worker){try{await worker.terminate()}catch(e){}}
-  ocrButton.disabled=false;ocrButton.textContent='話者名を付けて吹き出しを読み取る';
+ const filtered=comps.filter(c=>c.y>=scanTop&&c.y+c.h<=scanBottom&&c.w>=w*0.16&&c.h>=h*0.028).sort((a,b)=>a.y-b.y||a.x-b.x);
+ const merged=[];for(const c of filtered){const last=merged[merged.length-1];if(last&&Math.abs(c.y-last.y)<3&&Math.abs(c.x-last.x)<3){const ex=Math.max(last.x+last.w,c.x+c.w),ey=Math.max(last.y+last.h,c.y+c.h);last.x=Math.min(last.x,c.x);last.y=Math.min(last.y,c.y);last.w=ex-last.x;last.h=ey-last.y}else merged.push({...c})}
+ const crops=[];for(const c of merged){let pr=0,pg=0,pb=0,n=0;for(let yy=Math.max(c.y,Math.floor(c.y+c.h*.25));yy<Math.min(h,Math.ceil(c.y+c.h*.75));yy+=2)for(let xx=Math.max(c.x,Math.floor(c.x+c.w*.25));xx<Math.min(w,Math.ceil(c.x+c.w*.75));xx+=2){const ii=(yy*w+xx)*4,rr=px[ii],gg=px[ii+1],bb=px[ii+2];if(rr>25&&rr<130&&gg<170&&bb<240){pr+=rr;pg+=gg;pb+=bb;n++}}
+  const ar=n?pr/n:0,ag=n?pg/n:0,ab=n?pb/n:0,speaker=(ab>ar*1.12&&ar>ag*1.2)?"牡丹（自分側）":"日比崎まゆ（相手側）";
+  const pad=7,sx=Math.max(0,c.x-pad),sy=Math.max(0,c.y-pad),ex=Math.min(w,c.x+c.w+pad),ey=Math.min(h,c.y+c.h+pad),crop=document.createElement('canvas'),scale=3;
+  crop.width=(ex-sx)*scale;crop.height=(ey-sy)*scale;const ctx=crop.getContext('2d',{willReadFrequently:true});ctx.drawImage(base,sx,sy,ex-sx,ey-sy,0,0,crop.width,crop.height);
+  const im=ctx.getImageData(0,0,crop.width,crop.height),d=im.data;for(let i=0;i<d.length;i+=4){const gray=.299*d[i]+.587*d[i+1]+.114*d[i+2],v=255-gray;d[i]=d[i+1]=d[i+2]=v}ctx.putImageData(im,0,0);
+  crops.push({data:crop.toDataURL('image/png'),speaker,y:c.y,h:c.h})
  }
+ return {crops,nearBottom:merged.some(c=>c.y+c.h>=h*.90)};
+})}
+function prepareWhole(dataUrl){return loadImage(dataUrl).then(img=>{const c=document.createElement('canvas');c.width=img.width*2;c.height=img.height*2;const x=c.getContext('2d');x.drawImage(img,0,0,c.width,c.height);return c.toDataURL('image/png')})}
+ocrButton.onclick=async()=>{if(!images.length){ocrStatus.textContent='先に「写真を選んで取り込む」から写真を選んでね。';return}if(!window.Tesseract){ocrStatus.textContent='OCR機能を読み込めませんでした。インターネット接続を確認して、ページを再読み込みしてください。';return}
+ ocrButton.disabled=true;ocrButton.textContent='読み取り中…';let worker=null;const results=[];let possibleCut=false;
+ try{ocrStatus.textContent='日本語の読み取り準備中です。初回は少し時間がかかります…';worker=await Tesseract.createWorker('jpn',1,{logger:m=>{if(m.status==='recognizing text')ocrStatus.textContent='文字を読み取っています… '+Math.round((m.progress||0)*100)+'%';else if(m.status)ocrStatus.textContent='準備中：'+m.status}});await worker.setParameters({tessedit_pageseg_mode:'6',preserve_interword_spaces:'1'});
+ for(let i=0;i<images.length;i++){ocrStatus.textContent=(i+1)+'/'+images.length+'枚目：吹き出しを探しています…';const found=await detectBubbleCrops(images[i].data);let crops=found.crops;
+  if(!crops.length){ocrStatus.textContent='吹き出しが見つからないため、画像全体を読み取っています…';crops=[{data:await prepareWhole(images[i].data),speaker:'話者不明'}]}
+  if(found.nearBottom)possibleCut=true;
+  const lines=[];for(let j=0;j<crops.length;j++){ocrStatus.textContent=(i+1)+'/'+images.length+'枚目：吹き出し '+(j+1)+'/'+crops.length+' を読み取り中…';const r=await worker.recognize(crops[j].data);const t=(r.data.text||'').replace(/[ \t]+\n/g,'\n').replace(/\n{3,}/g,'\n\n').trim();if(t)lines.push('【'+crops[j].speaker+'】\n'+t)}
+  if(lines.length)results.push('【'+(i+1)+'枚目：'+images[i].name+'】\n'+lines.join('\n\n'))
+ }
+ if(results.length){const extracted=results.join('\n\n');script.value=script.value.trim()?script.value.trim()+'\n\n'+extracted:extracted;ocrStatus.textContent='読み取り完了。最後のセリフが欠けていないか、画像と見比べて確認してね。'+(possibleCut?' 吹き出しが画面下端近くにあるため、末尾が途切れた可能性があります。':'')}else ocrStatus.textContent='文字を読み取れませんでした。別の画像でも試してみてね。'
+ }catch(e){ocrStatus.textContent='読み取り中にエラーが起きました。通信状態を確認して、写真1枚で再度試してください。'}finally{if(worker){try{await worker.terminate()}catch(e){}}ocrButton.disabled=false;ocrButton.textContent='話者名を付けて吹き出しを読み取る'}
 };
-
 render()})();
 </script></body></html>
