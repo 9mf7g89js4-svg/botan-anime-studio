@@ -16,6 +16,18 @@ h2{font-size:17px;color:#f0a9d0;margin:0 0 9px}.hint,.small{font-size:13px;line-
 .meta{padding:7px;font-size:12px;color:#cbbdce;overflow-wrap:anywhere}.item button{width:100%;border-radius:0;background:#493344;color:white;font-size:12px;min-height:36px}
 textarea{width:100%;min-height:260px;background:#17131e;color:white;border:1px solid #9a719f;border-radius:10px;padding:14px;font:15px/1.8 sans-serif;resize:vertical;display:block}textarea:focus{outline:2px solid #efa5ce;outline-offset:2px}.editor-info{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin:8px 2px;color:#cbbdce;font-size:12px}.editor-tools{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 footer{text-align:center;color:#9f91a7;font-size:11px;padding:10px}@media(min-width:560px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
+.review-area{margin:12px 0 14px;padding:11px;background:#1b1622;border:1px solid #594765;border-radius:12px}
+.review-area .small{margin:0 0 8px}
+.review-photos{display:flex;gap:9px;overflow-x:auto;padding:2px 1px 8px;-webkit-overflow-scrolling:touch}
+.review-thumb{flex:0 0 92px;width:92px;border:1px solid #715d7d;border-radius:9px;padding:4px;background:#30243f;color:#fff;text-align:left;display:block}
+.review-thumb img{display:block;width:100%;height:76px;object-fit:contain;background:#100d14;border-radius:5px}
+.review-thumb span{display:block;font-size:11px;line-height:1.35;margin-top:5px;overflow-wrap:anywhere}
+.review-empty{font-size:12px;color:#b9aabd;padding:12px 4px}
+.photo-viewer{display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.94);padding:16px;align-items:center;justify-content:center;flex-direction:column;gap:12px}
+.photo-viewer.open{display:flex}
+.photo-viewer img{max-width:100%;max-height:calc(100dvh - 100px);object-fit:contain}
+.photo-viewer button{align-self:flex-end}
 </style></head><body>
 <header><h1>牡丹アニメ工房</h1><p>ゼタの物語を、少しずつアニメ作品へ。</p></header>
 <main>
@@ -23,14 +35,23 @@ footer{text-align:center;color:#9f91a7;font-size:11px;padding:10px}@media(min-wi
 <div class="actions"><label class="pick">写真を選んで取り込む<input id="picker" type="file" accept="image/*" multiple></label><button class="secondary" id="save">写真と台本を保存</button><button class="secondary" id="restore">以前保存したデータを復元</button></div>
 <div id="status" role="status">まだ画像は選ばれていません。</div><div id="gallery" class="grid"><div class="empty">ここに選んだ写真が表示されます</div></div>
 <div class="actions" style="margin-top:12px"><button class="danger" id="clear">画像をすべて消す</button></div><p class="small">写真を選ぶと、この画面にすぐ表示されます。残しておきたい写真は「写真と台本を保存」を押してね。「以前保存したデータを復元」は、保存済みの内容で今の画面を入れ替える機能です。ブラウザのデータ消去や容量制限には注意してね。</p></section>
-<section class="panel"><h2>② 台本メモ・編集</h2><p class="hint">OCRで読み取った文章も、ここで自由に書き換えられるよ。セリフの追加・削除・順番の入れ替えも自由。編集した内容は「写真と台本を保存」で保存できます。</p><textarea id="script" placeholder="ここに会話や台本を入力できます。読み取った文章を自由に修正してね。" aria-label="台本全体の編集欄"></textarea><div class="editor-info"><span id="charCount">0文字</span><span>編集内容は自動保存されません。「写真と台本を保存」を押してね。</span></div><div class="editor-tools"><button class="secondary" id="copy">台本をコピー</button><button class="secondary" id="txt">台本をテキスト保存</button><button class="danger" id="clearScript">台本を空にする</button></div></section>
-<section class="panel"><h2>③ 写真の文字を読み取る（OCR）</h2>
+<section class="panel"><h2>② 写真の文字を読み取る（OCR）</h2>
 <p class="hint">会話画面の吹き出しを自動で探して読み取ります。広告・タイトル・入力欄などを避け、色から話者を推定します。吹き出しが見つからない場合は、自動で画像全体を読み取ります。</p>
 <div class="actions"><button id="ocr">話者名を付けて吹き出しを読み取る</button></div>
 <div id="ocrStatus" class="small" role="status" style="margin-top:10px;min-height:1.5em">読み取りにはインターネット接続が必要です。初回は読み取り用データの読み込みに時間がかかる場合があります。</div>
 <p class="small">※ OCRは文字を誤認識することがあります。読み取り後、台本メモを確認・修正してください。写真や台本を外部サービスへ保存する機能ではありませんが、OCR処理のためTesseract.jsと日本語データをインターネットから読み込みます。</p></section>
+<section class="panel"><h2>③ 台本メモ・編集</h2><p class="hint">OCRで読み取った文章も、ここで自由に書き換えられるよ。セリフの追加・削除・順番の入れ替えも自由。編集した内容は「写真と台本を保存」で保存できます。</p><div class="review-area">
+<p class="small"><strong>写真を確認しながら編集</strong>：下の写真をタップすると大きく表示できます。</p>
+<div id="reviewPhotos" class="review-photos"><div class="review-empty">写真を取り込むと、ここに確認用の写真が表示されます。</div></div>
+</div>
+<textarea id="script" placeholder="ここに会話や台本を入力できます。読み取った文章を自由に修正してね。" aria-label="台本全体の編集欄"></textarea><div class="editor-info"><span id="charCount">0文字</span><span>編集内容は自動保存されません。「写真と台本を保存」を押してね。</span></div><div class="editor-tools"><button class="secondary" id="copy">台本をコピー</button><button class="secondary" id="txt">台本をテキスト保存</button><button class="danger" id="clearScript">台本を空にする</button></div></section>
 <section class="panel"><h2>④ これから追加する機能</h2><ul class="small"><li>キャラクター設定・立ち絵の管理</li><li>画像ごとの台本整理</li><li>シーンごとの台本整理</li><li>音声・動画制作に渡す素材づくり</li></ul><p class="small">写真の取り込み・保存・復元と、日本語OCRの試験機能を含みます。動画生成機能はまだ含まれていません。</p></section>
-</main><footer>牡丹アニメ工房・試作版 10.0（台本編集強化版）</footer>
+</main><footer>牡丹アニメ工房・試作版 11.0（作業順整理・写真確認版）</footer>
+<div id="photoViewer" class="photo-viewer" role="dialog" aria-modal="true" aria-label="写真の拡大表示">
+<button type="button" class="secondary" id="closePhotoViewer">閉じる ✕</button>
+<img id="photoViewerImage" alt="確認用の拡大写真">
+<div id="photoViewerCaption" class="small"></div>
+</div>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script>
 (()=>{const picker=document.getElementById('picker'),gallery=document.getElementById('gallery'),status=document.getElementById('status'),script=document.getElementById('script');let images=[];
@@ -40,7 +61,27 @@ script.addEventListener('input',updateCharCount);
 document.getElementById('clearScript').onclick=()=>{if(script.value.trim()&&confirm('台本メモの文章をすべて消しますか？')){script.value='';updateCharCount();script.focus();}};
 updateCharCount();
 function say(t){status.textContent=t}
-function render(){gallery.innerHTML='';if(!images.length){gallery.innerHTML='<div class="empty">ここに選んだ写真が表示されます</div>';return}images.forEach((x,i)=>{const card=document.createElement('div');card.className='item';const img=document.createElement('img');img.src=x.data;img.alt=x.name;const meta=document.createElement('div');meta.className='meta';meta.textContent=(i+1)+'枚目：'+x.name;const del=document.createElement('button');del.textContent='この画像を削除';del.onclick=()=>{images.splice(i,1);render();say('画像を1枚削除しました。')};card.append(img,meta,del);gallery.append(card)})}
+const reviewPhotos=document.getElementById('reviewPhotos');
+const photoViewer=document.getElementById('photoViewer');
+const photoViewerImage=document.getElementById('photoViewerImage');
+const photoViewerCaption=document.getElementById('photoViewerCaption');
+function closePhotoViewer(){photoViewer.classList.remove('open');photoViewerImage.removeAttribute('src');}
+document.getElementById('closePhotoViewer').addEventListener('click',closePhotoViewer);
+photoViewer.addEventListener('click',e=>{if(e.target===photoViewer)closePhotoViewer();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closePhotoViewer();});
+function renderReviewPhotos(){
+ reviewPhotos.innerHTML='';
+ if(!images.length){const empty=document.createElement('div');empty.className='review-empty';empty.textContent='写真を取り込むと、ここに確認用の写真が表示されます。';reviewPhotos.append(empty);return;}
+ images.forEach((item,index)=>{
+  const button=document.createElement('button');button.type='button';button.className='review-thumb';
+  const thumb=document.createElement('img');thumb.src=item.data;thumb.alt=item.name;
+  const label=document.createElement('span');label.textContent=(index+1)+'枚目：'+item.name;
+  button.append(thumb,label);
+  button.addEventListener('click',()=>{photoViewerImage.src=item.data;photoViewerCaption.textContent=(index+1)+'枚目：'+item.name;photoViewer.classList.add('open');});
+  reviewPhotos.append(button);
+ });
+}
+function render(){gallery.innerHTML='';renderReviewPhotos();if(!images.length){gallery.innerHTML='<div class="empty">ここに選んだ写真が表示されます</div>';return}images.forEach((x,i)=>{const card=document.createElement('div');card.className='item';const img=document.createElement('img');img.src=x.data;img.alt=x.name;const meta=document.createElement('div');meta.className='meta';meta.textContent=(i+1)+'枚目：'+x.name;const del=document.createElement('button');del.textContent='この画像を削除';del.onclick=()=>{images.splice(i,1);render();say('画像を1枚削除しました。')};card.append(img,meta,del);gallery.append(card)})}
 picker.addEventListener('change',()=>{const files=Array.from(picker.files||[]).filter(f=>f.type.startsWith('image/'));if(!files.length){say('画像が選択されませんでした。');return}let left=files.length,added=0;say(files.length+'枚の画像を読み込んでいます…');files.forEach(file=>{const r=new FileReader();r.onload=()=>{images.push({name:file.name,data:r.result});added++;left--;if(!left){render();say(added+'枚の画像を取り込みました。画面に表示されています。')}};r.onerror=()=>{left--;if(!left){render();say(added+'枚を取り込みました。')}};r.readAsDataURL(file)});picker.value=''});
 document.getElementById('save').onclick=()=>{try{localStorage.setItem('botanImages',JSON.stringify(images));localStorage.setItem('botanScript',script.value);say('写真と台本をこのブラウザに保存しました。')}catch(e){say('保存できません。画像の枚数を減らして試してください。')}};
 document.getElementById('restore').onclick=()=>{if(images.length&&!confirm('今、画面に表示されている写真を、以前保存した写真に入れ替えますか？'))return;try{images=JSON.parse(localStorage.getItem('botanImages')||'[]');script.value=localStorage.getItem('botanScript')||'';updateCharCount();render();say('以前保存したデータを復元しました。現在の写真と入れ替わっています。')}catch(e){say('保存データを復元できませんでした。')}};
