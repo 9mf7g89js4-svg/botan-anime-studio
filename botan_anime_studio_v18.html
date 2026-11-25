@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>牡丹アニメ工房 v18｜OCR改善版</title>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<style>
+:root{--main:#6956a5;--pale:#f3f0fa;--line:#ddd8e8;--ink:#263238}
+*{box-sizing:border-box}body{margin:0;background:#faf9fc;color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN",Meiryo,sans-serif;line-height:1.55}
+header{background:linear-gradient(135deg,#6d5aa8,#927fc2);color:#fff;padding:19px 16px}h1{font-size:21px;margin:0}header p{font-size:13px;margin:4px 0 0}
+main{max-width:850px;margin:auto;padding:13px}.panel{background:white;border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:13px}
+h2{font-size:17px;color:#51427f;margin:0 0 9px}p{margin:6px 0}.small{font-size:12px;color:#686575}
+button{border:0;border-radius:9px;background:var(--main);color:#fff;padding:10px 13px;font-size:14px;font-weight:650;margin:4px 4px 4px 0}button.alt{background:#e9e5f2;color:#42366b}button:disabled{opacity:.45}
+input,select,textarea{font:16px inherit;width:100%;padding:10px;border:1px solid #cfc9dc;border-radius:9px;background:white;color:var(--ink)}textarea{min-height:200px;line-height:1.55}
+#thumbs{display:flex;gap:8px;overflow-x:auto;padding:8px 0}.thumb{flex:0 0 100px;border:1px solid var(--line);padding:5px;border-radius:9px;font-size:11px}.thumb img{width:100%;height:95px;object-fit:cover;border-radius:6px}
+#cropWrap{position:relative;display:inline-block;max-width:100%;touch-action:none;line-height:0}#cropCanvas{display:block;max-width:100%;height:auto;max-height:60vh;touch-action:none}#selection{position:absolute;border:2px solid #ffdb4d;background:#ffdb4d22;pointer-events:none;display:none}
+.row{display:flex;gap:8px;flex-wrap:wrap}.row>*{flex:1;min-width:130px}
+.progress{height:8px;background:#eee;border-radius:8px;overflow:hidden;margin:8px 0}.progress span{display:block;width:0;height:100%;background:#7b68b5}
+.notice{background:var(--pale);padding:10px;border-radius:9px;font-size:13px}
+#status{font-size:13px;margin-top:7px;white-space:pre-wrap}
+</style>
+</head>
+<body>
+<header><h1>牡丹アニメ工房 v18</h1><p>OCR改善版｜会話部分を切り抜いて、拡大・補正して読み取る</p></header>
+<main>
+<section class="panel">
+<h2>① 写真を読み込む</h2>
+<p class="small">スクリーンショットを読み取りたい順番に選んでね。写真はこの画面内で処理し、元画像は変更しないよ。</p>
+<input id="files" type="file" accept="image/*" multiple>
+<div id="thumbs"></div>
+</section>
+<section class="panel">
+<h2>② 会話部分を切り抜く</h2>
+<p class="small">写真を選び、黄色い枠で会話が表示されている範囲を囲んでね。広告や上のタイトル、下の入力欄を外すと読み取りやすくなるよ。</p>
+<div class="row"><select id="photoSelect"></select><button class="alt" id="full">全体を選択</button></div>
+<div id="cropWrap"><canvas id="cropCanvas"></canvas><div id="selection"></div></div>
+<div class="row"><button class="alt" id="resetCrop">切り抜き範囲を戻す</button><button id="useCrop">この範囲を読み取り対象にする</button></div>
+<div id="cropMsg" class="small">写真を選択すると、ここに表示されるよ。</div>
+</section>
+<section class="panel">
+<h2>③ 読み取り設定</h2>
+<label class="small" for="enhance">文字の補正</label>
+<select id="enhance"><option value="contrast">拡大＋コントラスト補正（おすすめ）</option><option value="gray">拡大＋白黒化</option><option value="none">拡大のみ</option></select>
+<p class="small">小さな文字を大きくしてからOCRにかけるよ。白黒化で文字が消える場合は「コントラスト補正」に戻してね。</p>
+<button id="ocrBtn">選んだ写真を順番に読み取る</button>
+<div class="progress"><span id="bar"></span></div><div id="status" aria-live="polite"></div>
+</section>
+<section class="panel">
+<h2>④ 読み取った文章を確認・修正</h2>
+<div class="notice">ここにはOCRが読み取った文字をそのまま表示するよ。話者名やセリフをAIが推測して付け足すことはしないよ。誤字を直してから、次のシーン作成に使おう。</div>
+<textarea id="result" placeholder="読み取った文章がここに表示されます。直接修正もできます。"></textarea>
+<div class="row"><button class="alt" id="copy">文章をコピー</button><button class="alt" id="download">文章をテキスト保存</button></div>
+</section>
+<section class="panel">
+<h2>⑤ 保存・バックアップ</h2>
+<p class="small">文章と読み取り設定はこのブラウザに自動保存されるよ。写真そのものは保存しないので、必要なら元の写真を保管してね。</p>
+<button id="save">今すぐ保存</button><button class="alt" id="export">バックアップを書き出す</button>
+<input id="backup" type="file" accept=".json,application/json"><button class="alt" id="restore">バックアップを読み込む</button>
+<div id="saved" class="small"></div>
+</section>
+</main>
+<script>
+const $=id=>document.getElementById(id),KEY='botan_anime_studio_v18';
+let photos=[],active=0,rect=null,drag=null,canvasScale=1,ocrCrops=[];
+const canvas=$('cropCanvas'),ctx=canvas.getContext('2d'),sel=$('selection');
+function draw(){if(!photos.length)return;let im=photos[active].img;let maxW=Math.min(window.innerWidth-58,760),scale=Math.min(1,maxW/im.width,560/im.height);canvasScale=scale;canvas.width=Math.round(im.width*scale);canvas.height=Math.round(im.height*scale);ctx.drawImage(im,0,0,canvas.width,canvas.height);if(!rect)rect={x:0,y:0,w:canvas.width,h:canvas.height};showRect()}
+function showRect(){if(!rect)return;sel.style.display='block';sel.style.left=rect.x+'px';sel.style.top=rect.y+'px';sel.style.width=rect.w+'px';sel.style.height=rect.h+'px'}
+function pos(e){let b=canvas.getBoundingClientRect();return{x:Math.max(0,Math.min(canvas.width,(e.clientX-b.left)*canvas.width/b.width)),y:Math.max(0,Math.min(canvas.height,(e.clientY-b.top)*canvas.height/b.height))}}
+canvas.addEventListener('pointerdown',e=>{if(!photos.length)return;canvas.setPointerCapture(e.pointerId);let p=pos(e);drag={x:p.x,y:p.y};rect={x:p.x,y:p.y,w:1,h:1};showRect()});
+canvas.addEventListener('pointermove',e=>{if(!drag)return;let p=pos(e);rect={x:Math.min(drag.x,p.x),y:Math.min(drag.y,p.y),w:Math.abs(p.x-drag.x),h:Math.abs(p.y-drag.y)};showRect()});
+canvas.addEventListener('pointerup',()=>{drag=null});
+function refreshSelect(){let s=$('photoSelect');s.innerHTML='';photos.forEach((p,i)=>{let o=document.createElement('option');o.value=i;o.textContent=`${i+1}枚目：${p.name}`;s.append(o)});s.disabled=!photos.length}
+function renderThumbs(){$('thumbs').innerHTML='';photos.forEach((p,i)=>{let d=document.createElement('div');d.className='thumb';let im=document.createElement('img');im.src=p.url;let t=document.createElement('div');t.textContent=(i+1)+'枚目 '+p.name;let b=document.createElement('button');b.className='alt';b.textContent='表示';b.onclick=()=>selectPhoto(i);d.append(im,t,b);$('thumbs').append(d)});refreshSelect()}
+function selectPhoto(i){active=i;rect=null;draw();$('photoSelect').value=i;$('cropMsg').textContent=`${i+1}枚目を表示中。黄色い枠を指でドラッグして会話部分を囲んでね。`}
+$('files').onchange=async e=>{for(let f of [...e.target.files]){let url=URL.createObjectURL(f),img=new Image();img.src=url;await img.decode();photos.push({file:f,url,img,name:f.name})}renderThumbs();if(photos.length)selectPhoto(photos.length-1);e.target.value=''};
+$('photoSelect').onchange=e=>selectPhoto(+e.target.value);
+$('full').onclick=()=>{if(!photos.length)return;rect={x:0,y:0,w:canvas.width,h:canvas.height};showRect()};
+$('resetCrop').onclick=()=>{if(!photos.length)return;rect=null;draw()};
+$('useCrop').onclick=()=>{if(!photos.length||!rect||rect.w<15||rect.h<15){$('cropMsg').textContent='切り抜く範囲をもう少し大きく囲んでね。';return}let im=photos[active].img,s=1/canvasScale;ocrCrops[active]={sx:Math.round(rect.x*s),sy:Math.round(rect.y*s),sw:Math.round(rect.w*s),sh:Math.round(rect.h*s)};$('cropMsg').textContent=`${active+1}枚目の読み取り範囲を設定したよ。`};
+function prep(i){let p=photos[i],r=ocrCrops[i]||{sx:0,sy:0,sw:p.img.width,sh:p.img.height};let c=document.createElement('canvas');let scale=Math.min(3,Math.max(2,1800/Math.max(r.sw,r.sh)));c.width=Math.round(r.sw*scale);c.height=Math.round(r.sh*scale);let x=c.getContext('2d',{willReadFrequently:true});x.drawImage(p.img,r.sx,r.sy,r.sw,r.sh,0,0,c.width,c.height);let mode=$('enhance').value;if(mode!=='none'){let d=x.getImageData(0,0,c.width,c.height);let a=d.data;for(let k=0;k<a.length;k+=4){let lum=.299*a[k]+.587*a[k+1]+.114*a[k+2];if(mode==='gray'){let v=lum>168?255:0;a[k]=a[k+1]=a[k+2]=v}else{let v=Math.max(0,Math.min(255,(lum-118)*1.38+128));a[k]=a[k+1]=a[k+2]=v}}x.putImageData(d,0,0)}return c}
+$('ocrBtn').onclick=async()=>{if(!photos.length){$('status').textContent='先に写真を選んでね。';return}if(!window.Tesseract){$('status').textContent='OCR機能を読み込めません。通信を確認してページを再読み込みしてね。';return}
+$('ocrBtn').disabled=true;$('status').textContent='日本語の読み取り準備中…';$('bar').style.width='0%';let worker;
+try{worker=await Tesseract.createWorker('jpn+eng',1,{logger:m=>{if(m.status==='recognizing text'){$('status').textContent=`${m.status}…`;}}});await worker.setParameters({tessedit_pageseg_mode:'6',preserve_interword_spaces:'1'});let out=[];
+for(let i=0;i<photos.length;i++){if(!ocrCrops[i]){let p=photos[i];ocrCrops[i]={sx:0,sy:0,sw:p.img.width,sh:p.img.height}}$('status').textContent=`${i+1}/${photos.length}枚目を読み取り中…`;let c=prep(i);let res=await worker.recognize(c);out.push(`【${i+1}枚目：${photos[i].name}】\n${res.data.text.trim()}`);$('bar').style.width=Math.round((i+1)/photos.length*100)+'%'}
+$('result').value=out.join('\n\n');autosave();$('status').textContent='読み取り完了。文章を確認して、必要なところを直してね。';}
+catch(e){$('status').textContent='読み取りでエラーが発生しました。通信を確認して再度試してね。'}
+finally{if(worker)await worker.terminate();$('ocrBtn').disabled=false}};
+let saveTimer;function autosave(){clearTimeout(saveTimer);saveTimer=setTimeout(saveData,400)}
+function data(){return{result:$('result').value,enhance:$('enhance').value}}
+function saveData(){try{localStorage.setItem(KEY,JSON.stringify(data()));$('saved').textContent='このブラウザに保存済み。'}catch(e){$('saved').textContent='保存できませんでした。'}}
+$('result').oninput=autosave;$('enhance').onchange=autosave;$('save').onclick=saveData;
+$('copy').onclick=async()=>{try{await navigator.clipboard.writeText($('result').value);$('saved').textContent='文章をコピーしたよ。'}catch(e){$('saved').textContent='コピーできません。文章欄を長押ししてコピーしてね。'}};
+$('download').onclick=()=>{let a=document.createElement('a'),u=URL.createObjectURL(new Blob([$('result').value],{type:'text/plain;charset=utf-8'}));a.href=u;a.download='botan_ocr_text.txt';a.click();URL.revokeObjectURL(u)};
+$('export').onclick=()=>{let a=document.createElement('a'),u=URL.createObjectURL(new Blob([JSON.stringify(data(),null,2)],{type:'application/json'}));a.href=u;a.download='botan_anime_studio_v18_backup.json';a.click();URL.revokeObjectURL(u)};
+$('restore').onclick=()=>{let f=$('backup').files[0];if(!f){alert('先にバックアップファイルを選んでね。');return}let r=new FileReader();r.onload=()=>{try{let d=JSON.parse(r.result);$('result').value=d.result||'';$('enhance').value=d.enhance||'contrast';saveData();}catch(e){alert('バックアップを読み込めませんでした。')}};r.readAsText(f)};
+try{let d=JSON.parse(localStorage.getItem(KEY)||'null');if(d){$('result').value=d.result||'';$('enhance').value=d.enhance||'contrast'}}catch(e){}
+</script>
+</body></html>
