@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="ja"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>牡丹アニメ工房 v19｜OCR基本方式</title>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#17131e;color:#fff8ff;font-family:-apple-system,BlinkMacSystemFont,sans-serif;line-height:1.55}header{padding:20px;background:#493451}h1{font-size:21px;margin:0}main{max-width:760px;margin:auto;padding:14px}.panel{background:#261f30;border:1px solid #594765;border-radius:14px;padding:15px;margin-bottom:14px}h2{font-size:17px;color:#f0a9d0;margin:0 0 10px}.hint,.small{font-size:12px;color:#cbbdce}input,textarea{width:100%;padding:11px;border:1px solid #715d7d;border-radius:9px;background:#17131e;color:white;font:inherit}textarea{min-height:230px}button{border:0;border-radius:10px;padding:11px 14px;margin:5px 4px 5px 0;background:#efa5ce;color:#291a2b;font-weight:bold}button:disabled{opacity:.5}.thumbs{display:flex;gap:8px;overflow-x:auto}.thumb{flex:0 0 105px;font-size:11px}.thumb img{width:100%;height:95px;object-fit:contain}.progress{height:8px;background:#493a55;border-radius:8px;overflow:hidden}.progress span{display:block;height:100%;width:0;background:#efa5ce}
+</style>
+<header><h1>牡丹アニメ工房 v19</h1><div class="hint">OCR基本方式｜v15と同じ読み取り方法で比較</div></header>
+<main>
+<section class="panel"><h2>① 写真を読み込む</h2><p class="hint">複数の写真を読み取りたい順番に選んでね。切り抜きや加工はせず、元写真をそのまま読み取ります。</p><input id="files" type="file" accept="image/*" multiple><div id="previews" class="thumbs"></div></section>
+<section class="panel"><h2>② 写真から文字を読み取る</h2><p class="hint">v15と同じく、Tesseract.jsで元画像を直接読み取ります。拡大・白黒化・コントラスト補正は行いません。</p><button id="read">選んだ写真をまとめて読み取る</button><div class="progress"><span id="bar"></span></div><p id="status" class="small" aria-live="polite"></p></section>
+<section class="panel"><h2>③ 読み取り結果を確認・修正</h2><textarea id="result" placeholder="読み取った文章がここに表示されます。直接修正できます。"></textarea><button id="copy">文章をコピー</button><button id="txt">テキスト保存</button></section>
+<section class="panel"><h2>④ 保存・バックアップ</h2><p class="hint">文章はこのブラウザに自動保存されます。写真自体は保存されません。</p><button id="save">今すぐ保存</button><button id="backup">バックアップを保存</button><input id="backupFile" type="file" accept=".json,application/json"><button id="restore">バックアップから復元</button><p id="saved" class="small"></p></section>
+</main>
+<script>
+(()=>{const $=id=>document.getElementById(id),KEY='botan_anime_studio_v19';let files=[];
+$('files').onchange=e=>{files=Array.from(e.target.files||[]);$('previews').innerHTML='';files.forEach((f,i)=>{let d=document.createElement('div');d.className='thumb';let im=document.createElement('img');im.src=URL.createObjectURL(f);let t=document.createElement('div');t.textContent=(i+1)+'枚目：'+f.name;d.append(im,t);$('previews').append(d)});$('status').textContent=files.length+'枚の写真を選択しました。'};
+function cleanText(text){let lines=text.split(/\r?\n/).map(s=>s.replace(/[　\t]/g,' ').replace(/\s+/g,' ').trim()).filter(Boolean);let out=[];for(let line of lines){if(/(?:Y!mobile|Ymobile|docomo|SoftBank|Wi-?Fi|LTE|5G|広告|広告を消す|バッテリー|電波)/i.test(line))continue;if(/^[Il1|!]+$/.test(line))continue;line=line.replace(/^[|｜]+|[|｜]+$/g,'').trim();if(line)out.push(line)}return out.join('\n').replace(/[ \t]+/g,' ').trim()}
+$('read').onclick=async()=>{if(!files.length){$('status').textContent='先に写真を選んでね。';return}if(!window.Tesseract){$('status').textContent='OCR機能を読み込めません。通信を確認してページを再読み込みしてね。';return}let b=$('read'),pages=[];b.disabled=true;$('bar').style.width='0%';try{for(let i=0;i<files.length;i++){$('status').textContent=(i+1)+'枚目を読み取り中…';let r=await Tesseract.recognize(files[i],'jpn+eng',{logger:m=>{if(m.status==='recognizing text')$('status').textContent=(i+1)+'枚目を読み取り中… '+Math.round((m.progress||0)*100)+'%'}});pages.push('【'+(i+1)+'枚目：'+files[i].name+'】\n'+cleanText(r.data.text||''));$('bar').style.width=Math.round((i+1)/files.length*100)+'%'}$('result').value=pages.join('\n\n');store();$('status').textContent='読み取り完了。文章を確認してね。'}catch(e){$('status').textContent='読み取りに失敗しました。通信を確認して、もう一度試してね。'}finally{b.disabled=false}};
+let timer;function store(){try{localStorage.setItem(KEY,JSON.stringify({text:$('result').value}));$('saved').textContent='このブラウザに保存済み。'}catch(e){$('saved').textContent='保存できませんでした。'}}$('result').oninput=()=>{clearTimeout(timer);timer=setTimeout(store,350)};$('save').onclick=store;
+$('copy').onclick=async()=>{try{await navigator.clipboard.writeText($('result').value);$('saved').textContent='文章をコピーしました。'}catch(e){$('saved').textContent='文章欄を長押ししてコピーしてね。'}};
+function dl(name,data,type){let u=URL.createObjectURL(new Blob([data],{type})),a=document.createElement('a');a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)}
+$('txt').onclick=()=>dl('botan_ocr_v19.txt',$('result').value,'text/plain;charset=utf-8');$('backup').onclick=()=>dl('botan_anime_studio_v19_backup.json',JSON.stringify({text:$('result').value},null,2),'application/json');
+$('restore').onclick=()=>{let f=$('backupFile').files[0];if(!f){alert('先にバックアップを選んでね。');return}let r=new FileReader();r.onload=()=>{try{$('result').value=JSON.parse(r.result).text||'';store()}catch(e){alert('バックアップを読み込めませんでした。')}};r.readAsText(f)};
+try{let d=JSON.parse(localStorage.getItem(KEY)||'null');if(d&&typeof d.text==='string')$('result').value=d.text}catch(e){}
+})();
+</script>
