@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>牡丹アニメ工房 v17｜写真からシーン作成</title>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<style>
+:root{--ink:#263238;--main:#6956a5;--pale:#f3f0fa;--line:#ddd8e8;--bg:#faf9fc}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN",Meiryo,sans-serif;line-height:1.55}
+header{background:linear-gradient(135deg,#6d5aa8,#927fc2);color:white;padding:20px 16px}header h1{font-size:21px;margin:0 0 4px}header p{font-size:13px;margin:0;opacity:.95}
+main{max-width:850px;margin:auto;padding:14px}.panel{background:white;border:1px solid var(--line);border-radius:14px;padding:15px;margin:0 0 14px;box-shadow:0 2px 8px #3322550a}
+h2{font-size:17px;margin:0 0 12px;color:#51427f}h3{font-size:15px;margin:12px 0 8px}
+label{display:block;font-size:13px;font-weight:650;margin:10px 0 4px}
+input,select,textarea{width:100%;border:1px solid #cfc9dc;border-radius:9px;padding:10px;font-size:16px;background:#fff;color:var(--ink)}
+textarea{min-height:110px;resize:vertical}button{border:0;border-radius:10px;padding:11px 14px;font-size:15px;font-weight:650;background:var(--main);color:#fff;margin:5px 4px 5px 0}
+button.secondary{background:#e9e5f2;color:#42366b}button.danger{background:#a94b59}button:disabled{opacity:.5}
+.small{font-size:12px;color:#6c6875}.row{display:flex;gap:8px;flex-wrap:wrap}.row>*{flex:1;min-width:130px}
+.photo{display:inline-flex;flex-direction:column;vertical-align:top;width:112px;margin:7px 7px 0 0;border:1px solid var(--line);border-radius:9px;padding:5px;font-size:11px}
+.photo img{width:100%;height:105px;object-fit:cover;border-radius:6px}.photo button{font-size:11px;padding:5px;margin:4px 0 0}
+.progress{height:8px;background:#eee;border-radius:10px;overflow:hidden;margin:10px 0}.progress span{display:block;height:100%;width:0;background:#7b68b5}
+.scene{border:1px solid var(--line);border-radius:12px;padding:12px;margin:12px 0;background:#fff}
+.scenehead{display:flex;align-items:center;justify-content:space-between;gap:8px}.scenehead strong{color:#51427f}
+.note{background:var(--pale);padding:10px;border-radius:9px;font-size:13px}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+<header><h1>牡丹アニメ工房 v17</h1><p>写真から文章を読み取り、シーンの下書きを作る</p></header>
+<main>
+<section class="panel">
+<h2>① 作品の基本設定</h2>
+<div class="row">
+<div><label>作品タイトル</label><input id="workTitle" placeholder="作品名（任意）"></div>
+<div><label>ジャンル</label><select id="genre"><option>恋愛・ラブコメ</option><option>恋愛</option><option>ラブコメ</option><option>学園</option><option>ファンタジー</option><option>日常</option><option>アクション</option><option>ミステリー</option><option>SF</option><option>冒険</option><option>その他</option></select></div>
+</div>
+<div class="row">
+<div><label>アニメの画風</label><select id="style"><option>日本のテレビアニメ風</option><option>劇場版アニメ風</option><option>少女漫画風</option><option>青年漫画風</option><option>リアル調</option><option>コミカル・デフォルメ調</option><option>水彩イラスト風</option><option>その他</option></select></div>
+<div><label>1話の長さ</label><select id="duration"><option>10〜15分</option><option>5分程度</option><option>20〜25分</option><option>30分程度</option><option>指定しない</option></select></div>
+</div>
+<label>舞台・世界観</label><select id="setting"><option>現代日本</option><option>現代・架空の街</option><option>学校</option><option>異世界</option><option>近未来</option><option>歴史・時代物</option><option>その他</option></select>
+<label>作品・今回の話のメモ（任意）</label><textarea id="summary" placeholder="作品全体の説明や、今回の話で大切にしたいこと"></textarea>
+</section>
+
+<section class="panel">
+<h2>② 写真を読み込む</h2>
+<p class="small">会話のスクリーンショットを、読み取りたい順番に選んでね。複数枚まとめて選べるよ。</p>
+<input id="files" type="file" accept="image/*" multiple>
+<div id="photos"></div>
+<div class="row"><button id="ocrBtn">選んだ順番で文字を読み取る</button><button class="secondary" id="clearPhotos">写真を全部外す</button></div>
+<div id="status" class="small" aria-live="polite"></div><div class="progress"><span id="bar"></span></div>
+</section>
+
+<section class="panel">
+<h2>③ 読み取った文章を確認・修正</h2>
+<p class="small">OCRの読み間違いをここで直してから、シーン案を作ってね。元の会話をなるべく残すため、文章は自動で書き換えないよ。</p>
+<textarea id="ocrText" placeholder="読み取った文章がここに表示されます。ここに直接入力・修正もできます。"></textarea>
+<button id="makeScenes">文章からシーンの下書きを作る</button>
+</section>
+
+<section class="panel">
+<h2>④ シーンの下書き</h2>
+<div class="note">ここで作るのは、会話のまとまりをもとにした仮のシーン分けだよ。場面転換を完全に理解するものではないので、内容を確認して自由に直してね。</div>
+<div id="scenes"><p class="small">まだシーンはありません。</p></div>
+<button class="secondary" id="addScene">＋ シーンを手動で追加</button>
+</section>
+
+<section class="panel">
+<h2>⑤ 保存・バックアップ</h2>
+<p class="small">入力内容はこのブラウザに自動保存されます。別の端末やブラウザへ移すときは、バックアップを保存しておいてね。</p>
+<div class="row"><button id="saveBtn">今すぐ保存</button><button class="secondary" id="exportBtn">バックアップを保存</button></div>
+<div class="row"><input id="backupFile" type="file" accept=".json,application/json"><button class="secondary" id="importBtn">バックアップから復元</button></div>
+<button class="danger" id="resetBtn">このアプリの保存データを消去</button>
+<div id="saveStatus" class="small"></div>
+</section>
+</main>
+<script>
+const KEY='botan_anime_studio_v17';
+let images=[];
+const $=id=>document.getElementById(id);
+const fields=['workTitle','genre','style','duration','setting','summary','ocrText'];
+function snapshot(){return {fields:Object.fromEntries(fields.map(id=>[id,$(id).value])),scenes:[...document.querySelectorAll('.scene')].map(readScene)}}
+function readScene(el){return Object.fromEntries([...el.querySelectorAll('[data-field]')].map(x=>[x.dataset.field,x.value]))}
+function save(silent=true){try{localStorage.setItem(KEY,JSON.stringify(snapshot()));if(!silent)$('saveStatus').textContent='保存しました。';}catch(e){$('saveStatus').textContent='保存できませんでした。空き容量を確認してください。'}}
+let timer;function autosave(){clearTimeout(timer);timer=setTimeout(()=>save(true),350)}
+fields.forEach(id=>$(id).addEventListener('input',autosave));
+function renderPhotos(){$('photos').innerHTML='';images.forEach((im,i)=>{let d=document.createElement('div');d.className='photo';let img=document.createElement('img');img.src=im.url;let t=document.createElement('span');t.textContent=(i+1)+'枚目：'+im.name;let b=document.createElement('button');b.className='secondary';b.textContent='この写真を削除';b.onclick=()=>{URL.revokeObjectURL(im.url);images.splice(i,1);renderPhotos()};d.append(img,t,b);$('photos').append(d)})}
+$('files').addEventListener('change',e=>{[...e.target.files].forEach(f=>images.push({file:f,name:f.name,url:URL.createObjectURL(f)}));renderPhotos();e.target.value=''});
+$('clearPhotos').onclick=()=>{images.forEach(x=>URL.revokeObjectURL(x.url));images=[];renderPhotos();$('status').textContent='写真を外しました。'};
+$('ocrBtn').onclick=async()=>{if(!images.length){$('status').textContent='先に写真を選んでね。';return}if(!window.Tesseract){$('status').textContent='文字読み取り機能を読み込めません。通信状態を確認して再読み込みしてください。';return}
+$('ocrBtn').disabled=true;$('status').textContent='文字を読み取り中…';$('bar').style.width='0%';let parts=[];
+try{for(let i=0;i<images.length;i++){ $('status').textContent=`${i+1} / ${images.length} 枚目を読み取り中…`;let result=await Tesseract.recognize(images[i].file,'jpn+eng',{logger:m=>{if(m.status==='recognizing text')$('bar').style.width=Math.round(((i+m.progress)/images.length)*100)+'%'}});parts.push(`【${i+1}枚目：${images[i].name}】\n${result.data.text.trim()}`)}
+$('ocrText').value=parts.join('\n\n');autosave();$('status').textContent='読み取り完了！文章を確認・修正してね。';$('bar').style.width='100%';
+}catch(e){$('status').textContent='読み取り中にエラーが発生しました。通信状態を確認して、もう一度試してください。'}finally{$('ocrBtn').disabled=false}};
+function sceneMarkup(data={}){let n=document.querySelectorAll('.scene').length+1;let d=document.createElement('div');d.className='scene';d.innerHTML=`<div class="scenehead"><strong>シーン <span class="num">${n}</span></strong><div><button type="button" class="secondary up">↑</button><button type="button" class="secondary down">↓</button><button type="button" class="danger delete">削除</button></div></div>
+<label>シーンタイトル</label><input data-field="title" placeholder="例：朝の通学電車">
+<div class="row"><div><label>場所・背景</label><input data-field="place" placeholder="例：満員電車の車内"></div><div><label>時間帯</label><input data-field="time" placeholder="例：朝"></div></div>
+<label>登場人物</label><input data-field="characters" placeholder="例：牡丹、日比崎まゆ">
+<label>状況・動作</label><textarea data-field="action" placeholder="その場で起きていること"></textarea>
+<label>セリフ</label><textarea data-field="dialogue" placeholder="会話・ナレーション"></textarea>
+<div class="row"><div><label>表情・感情</label><input data-field="emotion" placeholder="例：驚き、照れ"></div><div><label>カメラ・演出メモ</label><input data-field="camera" placeholder="例：人物の表情に寄る"></div></div>
+<label>追加メモ</label><textarea data-field="notes" placeholder="効果音、演出、気づいたことなど"></textarea>`;
+Object.entries(data).forEach(([k,v])=>{let x=d.querySelector(`[data-field="${k}"]`);if(x)x.value=v});
+d.querySelectorAll('input,textarea').forEach(x=>x.addEventListener('input',autosave));
+d.querySelector('.delete').onclick=()=>{d.remove();renumber();autosave()};
+d.querySelector('.up').onclick=()=>{if(d.previousElementSibling)d.parentNode.insertBefore(d,d.previousElementSibling);renumber();autosave()};
+d.querySelector('.down').onclick=()=>{if(d.nextElementSibling)d.parentNode.insertBefore(d.nextElementSibling,d);renumber();autosave()};
+$('scenes').append(d);renumber();return d}
+function renumber(){document.querySelectorAll('.scene .num').forEach((x,i)=>x.textContent=i+1)}
+function splitDraft(text){let lines=text.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);let groups=[],cur=[];const boundary=/^(【\s*\d+枚目|場面転換|シーン\s*\d+|---+|＊＊＊|###)/;
+for(let line of lines){if(boundary.test(line)&&cur.length){groups.push(cur);cur=[]}cur.push(line);if(cur.length>=12){groups.push(cur);cur=[]}}if(cur.length)groups.push(cur);return groups}
+$('makeScenes').onclick=()=>{let text=$('ocrText').value.trim();if(!text){alert('先に文章を読み取るか、文章を入力してね。');return}if(document.querySelectorAll('.scene').length&&!confirm('今あるシーンを置き換えて、新しい下書きを作りますか？'))return;$('scenes').innerHTML='';let groups=splitDraft(text);groups.forEach((g,i)=>sceneMarkup({title:`シーン案 ${i+1}`,dialogue:g.join('\n')}));$('saveStatus').textContent=groups.length+'個のシーン案を作りました。場面分けを確認してね。';save(true)};
+$('addScene').onclick=()=>{sceneMarkup();autosave()};
+$('saveBtn').onclick=()=>save(false);
+$('exportBtn').onclick=()=>{let blob=new Blob([JSON.stringify(snapshot(),null,2)],{type:'application/json'});let a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='botan_anime_studio_v17_backup.json';a.click();URL.revokeObjectURL(a.href);$('saveStatus').textContent='バックアップを保存しました。'};
+$('importBtn').onclick=()=>{let f=$('backupFile').files[0];if(!f){alert('先にバックアップファイルを選んでね。');return}let r=new FileReader();r.onload=()=>{try{load(JSON.parse(r.result));save(false);$('saveStatus').textContent='バックアップから復元しました。'}catch(e){alert('このバックアップは読み込めませんでした。')}};r.readAsText(f)};
+function load(data){if(data.fields)fields.forEach(id=>{if(data.fields[id]!==undefined)$(id).value=data.fields[id]});$('scenes').innerHTML='';(data.scenes||[]).forEach(x=>sceneMarkup(x))}
+$('resetBtn').onclick=()=>{if(confirm('このアプリの保存データを消去します。よろしいですか？')){localStorage.removeItem(KEY);fields.forEach(id=>$(id).value='');$('scenes').innerHTML='<p class="small">まだシーンはありません。</p>';$('saveStatus').textContent='保存データを消去しました。'}};
+try{let old=localStorage.getItem(KEY);if(old)load(JSON.parse(old))}catch(e){}
+</script>
+</body></html>
