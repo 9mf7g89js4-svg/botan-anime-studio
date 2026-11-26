@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#30243f"><title>牡丹アニメ工房 v23</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#17131e;color:#fff8ff;font-family:-apple-system,BlinkMacSystemFont,sans-serif}
+header{padding:25px 15px;text-align:center;background:#493451}h1{margin:0 0 6px;font-size:25px}header p{margin:0;font-size:13px;color:#f2dced}
+main{max-width:760px;margin:auto;padding:15px}.panel{background:#261f30;border:1px solid #594765;border-radius:16px;padding:16px;margin-bottom:15px}
+h2{font-size:17px;color:#f0a9d0;margin:0 0 9px}.hint,.small{font-size:13px;line-height:1.6;color:#cbbdce}
+.actions{display:flex;flex-wrap:wrap;gap:9px}button,.pick{background:#efa5ce;color:#291a2b;border:0;border-radius:11px;padding:12px 15px;font-size:14px;font-weight:bold;min-height:44px;display:inline-flex;align-items:center;justify-content:center}
+.secondary{background:#493a55;color:white;border:1px solid #715d7d}.danger{background:#5a3548;color:#ffe9f2}
+.pick input{position:absolute;width:1px;height:1px;opacity:0}#status{font-size:13px;color:#f4c9e2;margin:12px 0;min-height:1.5em}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.empty{grid-column:1/-1;text-align:center;padding:22px 8px;border:1px dashed #715d7d;border-radius:10px;color:#b9aabd;font-size:13px}
+.item{background:#17131e;border:1px solid #594765;border-radius:10px;overflow:hidden}.item img{width:100%;height:165px;object-fit:contain;display:block;background:#100d14}
+.meta{padding:7px;font-size:12px;color:#cbbdce;overflow-wrap:anywhere}.item button{width:100%;border-radius:0;background:#493344;color:white;font-size:12px;min-height:36px}
+textarea{width:100%;min-height:260px;background:#17131e;color:white;border:1px solid #9a719f;border-radius:10px;padding:14px;font:15px/1.8 sans-serif;resize:vertical;display:block}textarea:focus{outline:2px solid #efa5ce;outline-offset:2px}.editor-info{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin:8px 2px;color:#cbbdce;font-size:12px}.editor-tools{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+footer{text-align:center;color:#9f91a7;font-size:11px;padding:10px}@media(min-width:560px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
+.review-area{margin:12px 0 14px;padding:11px;background:#1b1622;border:1px solid #594765;border-radius:12px}
+.review-area .small{margin:0 0 8px}
+.review-photos{display:flex;gap:9px;overflow-x:auto;padding:2px 1px 8px;-webkit-overflow-scrolling:touch}
+.review-thumb{flex:0 0 92px;width:92px;border:1px solid #715d7d;border-radius:9px;padding:4px;background:#30243f;color:#fff;text-align:left;display:block}
+.review-thumb img{display:block;width:100%;height:76px;object-fit:contain;background:#100d14;border-radius:5px}
+.review-thumb span{display:block;font-size:11px;line-height:1.35;margin-top:5px;overflow-wrap:anywhere}
+.review-empty{font-size:12px;color:#b9aabd;padding:12px 4px}
+.photo-viewer{display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.94);padding:16px;align-items:center;justify-content:center;flex-direction:column;gap:12px}
+.photo-viewer.open{display:flex}
+.photo-viewer img{max-width:100%;max-height:calc(100dvh - 100px);object-fit:contain;-webkit-user-select:text;user-select:text;-webkit-touch-callout:default;touch-action:manipulation}
+.editor-photo-stage{background:#100d14;border:1px solid #715d7d;border-radius:10px;padding:6px;margin:8px 0}
+.editor-photo-stage img{display:block;width:100%;height: min(32vh,250px);object-fit:contain}
+.editor-photo-caption{font-size:12px;color:#d9c9df;padding:5px 2px 0;overflow-wrap:anywhere}
+.editor-photo-actions{display:flex;gap:8px;margin-top:7px}
+.editor-photo-actions button{flex:1}
+#reviewPhotos{margin-top:8px}
+#script{min-height:38vh;scroll-margin-top:12px}
+@media(max-width:559px){main{padding:10px}.panel{padding:13px}.editor-photo-stage img{height:27vh;min-height:145px}#script{min-height:36vh;font-size:16px}}
+.photo-viewer button{align-self:flex-end}
+</style></head><body>
+<header><h1>牡丹アニメ工房</h1><p>ゼタの物語を、少しずつアニメ作品へ。</p></header>
+<main>
+<section class="panel"><h2>① 画像を取り込む</h2><p class="hint">ゼタの会話画面やキャラクター設定のスクリーンショットを選んでね。複数枚まとめて取り込めるよ。</p>
+<div class="actions"><label class="pick">写真を選んで取り込む<input id="picker" type="file" accept="image/*" multiple></label><button class="secondary" id="save">写真と台本を保存</button><button class="secondary" id="restore">以前保存したデータを復元</button></div>
+<div id="status" role="status">まだ画像は選ばれていません。</div><div id="gallery" class="grid"><div class="empty">ここに選んだ写真が表示されます</div></div>
+<div class="actions" style="margin-top:12px"><button class="danger" id="clear">画像をすべて消す</button></div><p class="small">写真を選ぶと、この画面にすぐ表示されます。残しておきたい写真は「写真と台本を保存」を押してね。「以前保存したデータを復元」は、保存済みの内容で今の画面を入れ替える機能です。ブラウザのデータ消去や容量制限には注意してね。</p></section>
+<section class="panel"><h2>② 写真を確認する</h2><p class="hint">取り込んだ写真が横に並びます。タップすると拡大表示できるので、セリフや場面の内容を確認してね。</p><div id="reviewPhotosTop" class="review-photos"><div class="review-empty">写真を取り込むと、ここに表示されます。</div></div></section>
+<section class="panel"><h2>③ 台本メモ・編集</h2><p class="hint">写真を上、台本入力欄を下に配置して、確認しながら編集しやすくしたよ。セリフや場面描写を入力・修正してね。写真の小さな画像をタップすると拡大できるよ。読み取り間違いを避けるため、自動OCRは外してあります。編集した内容は「写真と台本を保存」で保存できます。</p><div class="review-area">
+<p class="small"><strong>写真を確認しながら編集</strong>：下の写真をタップすると大きく表示できます。下の写真一覧から選ぶと、上のプレビューが切り替わるよ。そのすぐ下の台本メモに入力してね。</p>
+<div class="editor-photo-stage">
+<img id="editorPhotoPreview" alt="選択中の写真プレビュー">
+<div id="editorPhotoCaption" class="editor-photo-caption">写真を取り込むと、ここに選択した写真が表示されます。</div>
+<div class="editor-photo-actions"><button type="button" class="secondary" id="zoomEditorPhoto">写真を拡大</button></div>
+</div>
+<div id="reviewPhotos" class="review-photos"><div class="review-empty">写真を取り込むと、ここに確認用の写真が表示されます。</div></div>
+</div>
+<textarea id="script" placeholder="ここに会話や台本を入力できます。読み取った文章を自由に修正してね。" aria-label="台本全体の編集欄"></textarea><div class="editor-info"><span id="charCount">0文字</span><span>編集内容は自動保存されません。「写真と台本を保存」を押してね。</span></div><div class="editor-tools"><button class="secondary" id="confirmScriptEdit">編集を確定</button><button class="secondary" id="cancelScriptEdit">キャンセル</button><button class="secondary" id="copy">台本をコピー</button><button class="secondary" id="txt">台本をテキスト保存</button><button class="danger" id="clearScript">台本を空にする</button></div></section>
+<section class="panel"><h2>④ 次の制作ステップ</h2><ul class="small"><li>キャラクター設定・立ち絵の管理</li><li>画像ごとの台本整理</li><li>シーンごとの台本整理</li><li>音声・動画制作に渡す素材づくり</li></ul><p class="small">写真の取り込み・確認・保存・復元と、台本メモの編集機能を含みます。自動OCRと動画生成機能は含まれていません。</p></section>
+</main><footer>牡丹アニメ工房・試作版 23.0（上下配置・写真確認しながら編集版）</footer>
+<div id="photoViewer" class="photo-viewer" role="dialog" aria-modal="true" aria-label="写真の拡大表示">
+<button type="button" class="secondary" id="closePhotoViewer">閉じる ✕</button>
+<img id="photoViewerImage" alt="確認用の拡大写真">
+<div id="photoViewerCaption" class="small">文字を選択するときは、文字の上を長押ししてね。</div>
+</div>
+
+<script>
+(()=>{const picker=document.getElementById('picker'),gallery=document.getElementById('gallery'),status=document.getElementById('status'),script=document.getElementById('script');let images=[];
+const charCount=document.getElementById('charCount');
+function updateCharCount(){charCount.textContent=script.value.length.toLocaleString('ja-JP')+'文字'}
+let confirmedScript=script.value;
+script.addEventListener('focus',()=>{if(!script.dataset.editing){script.dataset.editing='1';script.dataset.beforeEdit=confirmedScript;}});
+script.addEventListener('input',updateCharCount);
+document.getElementById('confirmScriptEdit').addEventListener('click',()=>{confirmedScript=script.value;script.dataset.beforeEdit=confirmedScript;script.dataset.editing='';updateCharCount();say('台本の編集を確定しました。保存する場合は「写真と台本を保存」を押してね。');});
+document.getElementById('cancelScriptEdit').addEventListener('click',()=>{const before=script.dataset.editing==='1'?(script.dataset.beforeEdit??confirmedScript):confirmedScript;script.value=before;confirmedScript=before;script.dataset.editing='';updateCharCount();say('編集中の変更をキャンセルしました。');});
+document.getElementById('clearScript').onclick=()=>{if(script.value.trim()&&confirm('台本メモの文章をすべて消しますか？')){script.value='';updateCharCount();script.focus();}};
+updateCharCount();
+function say(t){status.textContent=t}
+const reviewPhotos=document.getElementById('reviewPhotos');
+const editorPhotoPreview=document.getElementById('editorPhotoPreview');
+const editorPhotoCaption=document.getElementById('editorPhotoCaption');
+let selectedPhotoIndex=0;
+function showEditorPhoto(index){
+ if(!images.length){editorPhotoPreview.removeAttribute('src');editorPhotoCaption.textContent='写真を取り込むと、ここに選択した写真が表示されます。';return;}
+ selectedPhotoIndex=Math.max(0,Math.min(index,images.length-1));
+ const item=images[selectedPhotoIndex];
+ editorPhotoPreview.src=item.data;
+ editorPhotoCaption.textContent=(selectedPhotoIndex+1)+'枚目：'+item.name+'（下の写真を選ぶと切り替わります）';
+}
+const reviewPhotosTop=document.getElementById('reviewPhotosTop');
+const photoViewer=document.getElementById('photoViewer');
+const photoViewerImage=document.getElementById('photoViewerImage');
+const photoViewerCaption=document.getElementById('photoViewerCaption');
+function closePhotoViewer(){photoViewer.classList.remove('open');const current=photoViewer.querySelector('img');if(current)current.removeAttribute('src');}
+function openPhotoViewer(item,index){
+ // 画像要素を毎回作り直し、前の写真のLive Text選択情報が残らないようにする
+ const fresh=document.createElement('img');fresh.id='photoViewerImage';fresh.alt='文字を選択する写真';fresh.style.cssText='max-width:100%;max-height:calc(100dvh - 100px);object-fit:contain;-webkit-user-select:text;user-select:text;-webkit-touch-callout:default;touch-action:manipulation';fresh.src=item.data;
+ const current=photoViewer.querySelector('img');if(current)current.replaceWith(fresh);else photoViewer.append(fresh);
+ photoViewerCaption.textContent=(index+1)+'枚目：'+item.name+'｜文字の上を長押しして選択してください';
+ photoViewer.classList.add('open');
+}
+document.getElementById('closePhotoViewer').addEventListener('click',closePhotoViewer);
+document.getElementById('zoomEditorPhoto').addEventListener('click',()=>{if(!images.length)return;openPhotoViewer(images[selectedPhotoIndex]||images[0],selectedPhotoIndex);});
+photoViewer.addEventListener('click',e=>{if(e.target===photoViewer)closePhotoViewer();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closePhotoViewer();});
+function renderReviewPhotos(){
+ reviewPhotos.innerHTML=''; reviewPhotosTop.innerHTML='';
+ if(!images.length){const empty=document.createElement('div');empty.className='review-empty';empty.textContent='写真を取り込むと、ここに確認用の写真が表示されます。';reviewPhotos.append(empty);reviewPhotosTop.append(empty.cloneNode(true));showEditorPhoto(0);return;}
+ if(selectedPhotoIndex>=images.length)selectedPhotoIndex=images.length-1;
+ showEditorPhoto(selectedPhotoIndex);
+ images.forEach((item,index)=>{
+  const button=document.createElement('button');button.type='button';button.className='review-thumb';
+  const thumb=document.createElement('img');thumb.src=item.data;thumb.alt=item.name;
+  const label=document.createElement('span');label.textContent=(index+1)+'枚目：'+item.name;
+  button.append(thumb,label);
+  button.addEventListener('click',()=>{showEditorPhoto(index);});
+  const topButton=button.cloneNode(true); topButton.addEventListener('click',()=>{showEditorPhoto(index);openPhotoViewer(item,index);});
+  reviewPhotos.append(button); reviewPhotosTop.append(topButton);
+ });
+}
+function render(){gallery.innerHTML='';renderReviewPhotos();if(!images.length){gallery.innerHTML='<div class="empty">ここに選んだ写真が表示されます</div>';return}images.forEach((x,i)=>{const card=document.createElement('div');card.className='item';const img=document.createElement('img');img.src=x.data;img.alt=x.name;const meta=document.createElement('div');meta.className='meta';meta.textContent=(i+1)+'枚目：'+x.name;const del=document.createElement('button');del.textContent='この画像を削除';del.onclick=()=>{images.splice(i,1);render();say('画像を1枚削除しました。')};card.append(img,meta,del);gallery.append(card)})}
+picker.addEventListener('change',()=>{const files=Array.from(picker.files||[]).filter(f=>f.type.startsWith('image/'));if(!files.length){say('画像が選択されませんでした。');return}let left=files.length,added=0;say(files.length+'枚の画像を読み込んでいます…');files.forEach(file=>{const r=new FileReader();r.onload=()=>{images.push({name:file.name,data:r.result});added++;left--;if(!left){render();say(added+'枚の画像を取り込みました。画面に表示されています。')}};r.onerror=()=>{left--;if(!left){render();say(added+'枚を取り込みました。')}};r.readAsDataURL(file)});picker.value=''});
+document.getElementById('save').onclick=()=>{try{localStorage.setItem('botanImages',JSON.stringify(images));localStorage.setItem('botanScript',script.value);confirmedScript=script.value;script.dataset.editing='';say('写真と台本をこのブラウザに保存しました。')}catch(e){say('保存できません。画像の枚数を減らして試してください。')}};
+document.getElementById('restore').onclick=()=>{if(images.length&&!confirm('今、画面に表示されている写真を、以前保存した写真に入れ替えますか？'))return;try{const savedImages=localStorage.getItem('botanImages');const savedScript=localStorage.getItem('botanScript');if(savedImages===null&&savedScript===null){say('このブラウザには復元できる保存データがありません。v21を開いて保存したブラウザと同じSafariで試してください。');return;}const parsed=savedImages?JSON.parse(savedImages):[];if(!Array.isArray(parsed))throw new Error('画像データ形式');images=parsed;script.value=savedScript||'';confirmedScript=script.value;script.dataset.editing='';updateCharCount();render();say('写真と台本を復元しました。');}catch(e){say('保存データを読み込めませんでした。保存データが壊れている可能性があります。')}};
+document.getElementById('clear').onclick=()=>{if(confirm('画面上の画像をすべて消しますか？')){images=[];render();say('画面上の画像を消しました。保存済みデータは残っています。')}};
+document.getElementById('copy').onclick=async()=>{try{await navigator.clipboard.writeText(script.value);say('台本をコピーしました。')}catch(e){script.select();say('台本を選択しました。長押ししてコピーできます。')}};
+document.getElementById('txt').onclick=()=>{const a=document.createElement('a'),u=URL.createObjectURL(new Blob([script.value],{type:'text/plain;charset=utf-8'}));a.href=u;a.download='botan_script.txt';a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)};
+render()})();
+</script></body></html>
